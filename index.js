@@ -27,6 +27,11 @@ async function run() {
         const db = client.db("sportnest")  //create database
         const facilityCollection = db.collection('facilities') //create collection
 
+        app.get('/facility', async(req,res)=>{
+            const result = await facilityCollection.find().toArray(); //db theke all data niye ashbo
+            res.json(result);
+        })
+
         app.post('/facility', async(req,res)=>{
             const facilityData = req.body; //form data niye aschi
 
