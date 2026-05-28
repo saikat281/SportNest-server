@@ -22,28 +22,28 @@ const client = new MongoClient(uri, {
     }
 });
 
-const JWKS= createRemoteJWKSet(
+const JWKS = createRemoteJWKSet(
     new URL('http://localhost:3000/api/auth/jwks')
 )
-const verifyToken = async(req,res,next)=>{
-    const header= req.headers.authorization
-    if(!header){
-        return res?.status(401).json({message:"unauthorized"})
+const verifyToken = async (req, res, next) => {
+    const header = req.headers.authorization
+    if (!header) {
+        return res?.status(401).json({ message: "unauthorized" })
     }
     const token = header.split(" ")[1]
-    if(!token){
-        return res?.status(403).json({message:"unauthorized"})
+    if (!token) {
+        return res?.status(403).json({ message: "unauthorized" })
     }
     try {
-        const {payload} = await jwtVerify(token,JWKS)
-        
+        const { payload } = await jwtVerify(token, JWKS)
+
         next()
     } catch (error) {
         res.status(401).json({
-            message : "forbidden"
+            message: "forbidden"
         })
     }
-    
+
 }
 
 async function run() {
@@ -59,7 +59,7 @@ async function run() {
             res.json(result);
         })
 
-        app.post('/facility',verifyToken, async (req, res) => {
+        app.post('/facility', verifyToken, async (req, res) => {
             const facilityData = req.body; //form data niye aschi
 
             const result = await facilityCollection.insertOne(facilityData); // insert data
@@ -67,12 +67,24 @@ async function run() {
         })
 
         // for facility-details
-        app.get('/facility/:id', verifyToken,async (req, res)=>{
-                const { id } = req.params;
-                const result = await facilityCollection.findOne({ _id: new ObjectId(id) })
-                res.json(result)
-            }
+        app.get('/facility/:id', verifyToken, async (req, res) => {
+            const { id } = req.params;
+            const result = await facilityCollection.findOne({ _id: new ObjectId(id) })
+            res.json(result)
+        }
         )
+        app.patch('/facility/:id',verifyToken, async (req, res) => {
+            const { id } = req.params;
+            const updateData = req.body
+            const result = await facilityCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: updateData }
+            )
+            res.json(result)
+        }
+        )
+
+
 
         // for manage-my-facilities
         app.get('/facility/user/:userId', async (req, res) => {
@@ -83,7 +95,7 @@ async function run() {
         })
 
 
-        app.get('/booking/:userId',verifyToken,async (req, res) => {
+        app.get('/booking/:userId', verifyToken, async (req, res) => {
             const { userId } = req.params;
             const result = await bookingCollection.find({ userId: userId }).toArray(); //database er userId : ekhaner destructure kora userId
 
@@ -91,7 +103,7 @@ async function run() {
 
         })
 
-        app.post('/booking',verifyToken, async (req, res) => {
+        app.post('/booking', verifyToken, async (req, res) => {
             const bookingData = req.body;
 
             const result = await bookingCollection.insertOne(bookingData); // insert data
