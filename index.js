@@ -73,6 +73,8 @@ async function run() {
             res.json(result)
         }
         )
+
+
         app.patch('/facility/:id',verifyToken, async (req, res) => {
             const { id } = req.params;
             const updateData = req.body
@@ -83,6 +85,13 @@ async function run() {
             res.json(result)
         }
         )
+
+         app.delete('/facility/:id',verifyToken, async (req, res) => {
+            const { id } = req.params;
+            const result = await facilityCollection.deleteOne({ _id: new ObjectId(id) });
+
+            res.json(result);
+        })
 
 
 
