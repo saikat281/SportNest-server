@@ -55,7 +55,39 @@ async function run() {
 
 
         app.get('/facility', async (req, res) => {
-            const result = await facilityCollection.find().toArray(); //db theke all data niye ashbo
+
+            const search = req.query.search || "";
+            const sportType = req.query.sportType || "";
+
+            let query = {};
+
+            // console.log("RAW SEARCH:", search);
+            // console.log("RAW SPORT:", sportType);
+            // console.log("req.query: ",req.query)
+
+            // Search by Facility Name
+            if (search) {
+                query.FacilityName = {
+                    $regex: search,
+                    $options: "i" // case insensitive
+                };
+            }
+
+            // Filter by sport type
+            if (sportType) {
+
+                // multiple type support
+                const sportTypesArray = sportType.split(",");
+
+                query.FacilityType = {
+                    $in: sportTypesArray
+                };
+            }
+            //   console.log("FINAL QUERY:", query);
+
+            //   console.log("SAMPLE DATA:", await facilityCollection.findOne());
+
+            const result = await facilityCollection.find(query).toArray(); //db theke all data niye ashbo
             res.json(result);
         })
 
@@ -75,7 +107,7 @@ async function run() {
         )
 
 
-        app.patch('/facility/:id',verifyToken, async (req, res) => {
+        app.patch('/facility/:id', verifyToken, async (req, res) => {
             const { id } = req.params;
             const updateData = req.body
             const result = await facilityCollection.updateOne(
@@ -86,7 +118,7 @@ async function run() {
         }
         )
 
-         app.delete('/facility/:id',verifyToken, async (req, res) => {
+        app.delete('/facility/:id', verifyToken, async (req, res) => {
             const { id } = req.params;
             const result = await facilityCollection.deleteOne({ _id: new ObjectId(id) });
 
@@ -98,7 +130,36 @@ async function run() {
         // for manage-my-facilities
         app.get('/facility/user/:userId', async (req, res) => {
             const { userId } = req.params;
-            const result = await facilityCollection.find({ id: userId }).toArray();
+
+            const search = req.query.search || "";
+            const sportType = req.query.sportType || "";
+
+            let query = {
+                id: userId
+            };
+
+            
+
+            // Search by Facility Name
+            if (search) {
+                query.FacilityName = {
+                    $regex: search,
+                    $options: "i" // case insensitive
+                };
+            }
+
+            // Filter by sport type
+            if (sportType) {
+
+                // multiple type support
+                const sportTypesArray = sportType.split(",");
+
+                query.FacilityType = {
+                    $in: sportTypesArray
+                };
+            }
+
+            const result = await facilityCollection.find(query).toArray();
             res.json(result)
 
         })
